@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<a href="" id="downlink" style="display:none" download="">HEY</a>
 <html>
   
 <head>
@@ -9,6 +10,12 @@
     <input type="file" name="file" id="file" />
 
     <script type="text/javascript">
+        function downloadFile(url) {
+            var link = document.getElementById("downlink");
+            link.setAttribute("download", url);
+            link.click();
+        };
+        
         //Defining the CalendarEvent class
         class CalendarEvent{
             title = "";
@@ -81,16 +88,17 @@
                             if(appendURL){
                                 //Appending the 2nd line of the link
                                 newEvent.link = newEvent.link + line.substring(1, line.length - 1);
-
+                                console.log(newEvent.link);
                                 //Splicing the link together to form a link to the assignment rather than the calendar event
-                                if(line.includes("#assignment_")){
-                                    newEvent.link = line.substring(4, 32) + "courses/" + line.substring(65, 71) + "/assignments/" + line.substring(102, line.length - 1);
+                                if(newEvent.link.includes("#assignment_")){
+                                    newEvent.link = newEvent.link.substring(0, 28) + "courses/" + newEvent.link.substring(61, 67) + "/assignments/" + newEvent.link.substring(99, 106);
                                 }
-                                else if(line.includes("#calendar_event")){
-                                    newEvent.link = line.substring(4, 32) + "courses/" + line.substring(65, 71) + "/calendar_events/" + line.substring(106, line.length - 1);
+                                else if(newEvent.link.includes("#calendar_event")){
+                                    newEvent.link = newEvent.link.substring(0, 28) + "courses/" + newEvent.link.substring(61, 67) + "/calendar_events/" + newEvent.link.substring(103, 110);
                                 }
 
                                 appendURL = false;
+                                checkNext = false;
                             }
                             else if(appendSummary){
                                 if(!line.includes("URL:")){
@@ -119,22 +127,13 @@
                                         //Updating the link variable with the respective zoom link
                                         newEvent.link = newEvent.description.substring(49, newEvent.description.length - 2);
                                     }
-                                    else if(newEvent.description.toLowerCase().includes("exam") ||
-                                            newEvent.description.toLowerCase().includes("test") ||
-                                            newEvent.description.toLowerCase().includes("midterm") ||
-                                            newEvent.description.toLowerCase().includes("final")){
+                                    else if(newEvent.title.toLowerCase().includes("exam") ||
+                                            newEvent.title.toLowerCase().includes("test") ||
+                                            newEvent.title.toLowerCase().includes("midterm") ||
+                                            newEvent.title.toLowerCase().includes("final")){
                                         newEvent.type = "Exam";
                                     }
-                                    else if(newEvent.description.toLowerCase().includes("quiz")){
-                                        newEvent.type = "Quiz";
-                                    }
-                                    else if(newEvent.description.toLowerCase.includes("exam") ||
-                                            newEvent.description.toLowerCase.includes("test") ||
-                                            newEvent.description.toLowerCase.includes("midterm") ||
-                                            newEvent.description.toLowerCase.includes("final")){
-                                        newEvent.type = "Exam";
-                                    }
-                                    else if(newEvent.description.toLowerCase.includes("quiz")){
+                                    else if(newEvent.title.toLowerCase().includes("quiz")){
                                         newEvent.type = "Quiz";
                                     }
                                     else if(newEvent.uid.toLowerCase().includes("calendar-event")){
@@ -144,11 +143,11 @@
                                     else{
                                         newEvent.type = "Assignment";
                                     }
-                                    
                                     appendSummary = false;
+                                    checkNext = false;
                                 }
                             }
-                            else if(!(line.includes("SEQUENCE:") || line.includes("LOCATION:"))){
+                            else if(!(line.includes("SEQUENCE:") || line.includes("LOCATION:") || line.includes("ALT-DESC"))){
                                 //Continuously appending the next line of the description until reaching the next attribute
                                 newEvent.description = newEvent.description + line.substring(1, line.length - 1);
                             }
@@ -166,52 +165,70 @@
                             var date = "";
                             if(line.includes("DTSTART;VALUE=DATE:")){
                                 date = line.substring(19, line.length - 1);
-                                
                                 //Catch case for 11:59 PM due time, since it is
                                 //displayed as 000000 rather than 235900
-                                if(line.substring(28, line.length - 1) == "000000"){
-                                    startHour = 23;
-                                    startMinute = 59;
+                                if(date.substring(9, line.length - 1) == "000000"){
+                                    newEvent.startHour = 23;
+                                    newEvent.startMinute = 59;
                                 }
-                                startHour = parseInt(line.substring(18, 20)) - 4;
-                                startMinute = parseInt(line.substring(20, 22));
+                                else{
+                                    if(parseInt(date.substring(9, 11)) < 4){
+                                        newEvent.startHour = parseInt(date.substring(9, 11)) + 20;
+                                    }
+                                    else{
+                                        newEvent.startHour = parseInt(date.substring(9, 11)) - 4;
+                                    }
+                                    newEvent.startMinute = parseInt(date.substring(11, 13));
+                                }
                             }
                             else if(line.includes("DTSTART:")){
-                                date = line.substring(8, line.length - 1);
-                                startHour = parseInt(line.substring(18, 20));
-                                startMinute = parseInt(line.substring(20, 22));
+                                date = line.substring(8, line.length);
+                                if(parseInt(date.substring(9, 11)) < 4){
+                                    newEvent.startHour = parseInt(date.substring(9, 11)) + 20;
+                                }
+                                else{
+                                    newEvent.startHour = parseInt(date.substring(9, 11)) - 4;
+                                }
+                                newEvent.startMinute = parseInt(date.substring(11, 13));
                             }
 
-                            year = parseInt(date.substring(0, 4));
-                            month = parseInt(date.substring(4, 6));
-                            day = parseInt(date.substring(6, 8));
+                            newEvent.year = parseInt(date.substring(0, 4));
+                            newEvent.month = parseInt(date.substring(4, 6));
+                            newEvent.day = parseInt(date.substring(6, 8));
                         }
 
                         if(line.includes("DTEND;VALUE=DATE:") || line.includes("DTEND:")){
                             var date = ""
                             if(line.includes("DTEND;VALUE=DATE:")){
-                                date = line.substring(19, line.length - 1);
-                                
+                                date = line.substring(17, line.length - 1);
                                 //Catch case for 11:59 PM due time, since it is
                                 //displayed as 000000 rather than 235900
-                                if(line.substring(28, line.length - 1) == "000000"){
-                                    endHour = 23;
-                                    endMinute = 59;
-                                }
-
-                                if(parseInt(line.substring(18, 20)) < 4){
-                                    endHour = parseInt(line.substring(18, 20)) + 20;
+                                if(date.substring(9, line.length - 1) == "000000"){
+                                    newEvent.endHour = 23;
+                                    newEvent.endMinute = 59;
                                 }
                                 else{
-                                    endHour = parseInt(line.substring(18, 20)) - 4;
+                                    if(parseInt(date.substring(9, 11)) < 4){
+                                        newEvent.endHour = parseInt(date.substring(9, 11)) + 20;
+                                    }
+                                    else{
+                                        newEvent.endHour = (parseInt(date.substring(9, 11)) - 4);
+                                    }
+
+                                    newEvent.endMinute = parseInt(date.substring(11, 13));
                                 }
 
-                                endMinute = parseInt(line.substring(20, 22));
                             }
                             else if(line.includes("DTEND:")){
-                                date = line.substring(8, line.length - 1);
-                                endHour = parseInt(line.substring(18, 20));
-                                endMinute = parseInt(line.substring(20, 22));
+                                date = line.substring(6, line.length - 1);
+                                if(parseInt(date.substring(9, 11)) < 4){
+                                    newEvent.endHour = parseInt(date.substring(9, 11)) + 20;
+                                }
+                                else{
+                                    newEvent.endHour = (parseInt(date.substring(9, 11)) - 4);
+                                }
+
+                                newEvent.endMinute = parseInt(date.substring(11, 13));
                             }
                         }
 
@@ -227,23 +244,40 @@
                         }
 
                         if(line.includes("URL:")){
-                            if(newEvent.type != "Office Hours" || newEvent.type != "Discussion" || newEvent.type != "Lab" || newEvent.type != "Class"){
-                                newEvent.link = line.substring(4, line.length - 1);
+                            if(newEvent.type == "Office Hours" || newEvent.type == "Discussion" || newEvent.type == "Lab" || newEvent.type == "Class"){
+                                newEvent.link = newEvent.description.substring(49, newEvent.description.length - 1);
                             }
-                            appendURL = true;
-                            checkNext = true;
+                            else{
+                                newEvent.link = line.substring(4, newEvent.description.length - 1);
+                                appendURL = true;
+                                checkNext = true;
+                            }
                         }
 
-                        if(line.includes("END:VEVENT:")){
+                        if(line.includes("END:VEVENT")){
                             //PUSH AKA COPY current event (NOT A POINTER) into collection
-                            events_arr.push(newEvent);
+                            events_arr.push(Object.assign({}, newEvent));
+                            //console.log(newEvent.title + " - " + newEvent.class);
                             newEvent.reset();
                         }
                     }
+                    else{
+                        return;
+                    }
                 })
+                for(const element of events_arr){
+                    console.log(element.title + " - " + element.class + " - " + element.type);
+                    console.log(element.link);
+                    console.log(element.description);
+                    console.log("Date: " + element.month + "/" + element.day + "/" + element.year);
+                    console.log("From: " + element.startHour + ":" + element.startMinute + " to " + element.endHour + ":" + element.endMinute);
+                    console.log("\n");6
+                }
             }
             reader.readAsText(input.files[0]);
         }, false)
+
+        
     </script>
 
 </body>
