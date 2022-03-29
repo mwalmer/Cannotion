@@ -1,4 +1,4 @@
-BEGIN:VCALENDAR
+export const large_file = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:icalendar-ruby
 CALSCALE:GREGORIAN
@@ -4859,3 +4859,4 @@ X-ALT-DESC;FMTTYPE=text/html:<link rel="stylesheet" href="https://instructu
  l Submission Clearance</a> for Honors Completion</p>
 END:VEVENT
 END:VCALENDAR
+`

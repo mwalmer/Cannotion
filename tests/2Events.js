@@ -1,4 +1,4 @@
-BEGIN:VCALENDAR
+export const small_file = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:icalendar-ruby
 CALSCALE:GREGORIAN
@@ -47,4 +47,4 @@ X-ALT-DESC;FMTTYPE=text/html:<link rel="stylesheet" href="https://instructu
  UGJmQzdoeCtXR3psbWNFLzVmekpsZz09" target="_blank">Click here to join Zoom 
  Meeting:971 9168 3079</a></p>
 END:VEVENT
-END:VCALENDAR
+END:VCALENDAR`
