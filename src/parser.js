@@ -50,12 +50,12 @@ class CalendarEvent{
     }
 }
 
-//Create container for events
-let events_arr = [];
 // const input = document.querySelector('input[type="file"]')
-export function parseFile(file){
+export function parser(file){
     // console.log(input.files);
     //Create new calendar event
+    //Create container for events
+    let events_arr = [];
     let newEvent = new CalendarEvent();
 
     //Flag variables to allow for multi-line parts to be concatenated
@@ -154,7 +154,6 @@ export function parseFile(file){
                 newEvent.year = parseInt(date.substring(0, 4));
                 newEvent.month = parseInt(date.substring(4, 6));
                 newEvent.day = parseInt(date.substring(6, 8));
-                console.log(newEvent.month + " / " + newEvent.day);
                 //Catch case for 11:59 PM due time, since it is
                 //displayed as 000000 rather than 235900
                 if(date.substring(9, line.length) == "000000"){
@@ -260,6 +259,9 @@ export function parseFile(file){
         console.log("From: " + element.startHour + ":" + element.startMinute + " to " + element.endHour + ":" + element.endMinute);
         console.log("\n");6
     }
+
+    return events_arr;
 }
 
-parseFile(small_file);
+module.exports = parser;
+parser(large_file);
