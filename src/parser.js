@@ -70,10 +70,9 @@ export function parseFile(file){
                 if(appendURL){
                     //Appending the 2nd line of the link
                     newEvent.link = newEvent.link + line.substring(1, line.length);
-                    console.log(newEvent.link);
                     //Splicing the link together to form a link to the assignment rather than the calendar event
                     if(newEvent.link.includes("#assignment_")){
-                        newEvent.link = newEvent.link.substring(0, 28) + "courses/" + newEvent.link.substring(61, 67) + "/assignments/" + newEvent.link.substring(99, 106);
+                        newEvent.link = newEvent.link.substring(0, 28) + "courses/" + newEvent.link.substring(61, 67) + "/assignments/" + newEvent.link.substring(98, 106);
                     }
                     else if(newEvent.link.includes("#calendar_event")){
                         newEvent.link = newEvent.link.substring(0, 28) + "courses/" + newEvent.link.substring(61, 67) + "/calendar_events/" + newEvent.link.substring(103, 110);
@@ -112,7 +111,7 @@ export function parseFile(file){
                         else if(newEvent.title.toLowerCase().includes("exam") ||
                                 newEvent.title.toLowerCase().includes("test") ||
                                 newEvent.title.toLowerCase().includes("midterm") ||
-                                newEvent.title.toLowerCase().includes("final")){
+                                newEvent.title.toLowerCase().includes("final exam")){
                             newEvent.type = "Exam";
                         }
                         else if(newEvent.title.toLowerCase().includes("quiz")){
@@ -147,11 +146,30 @@ export function parseFile(file){
                 var date = "";
                 if(line.includes("DTSTART;VALUE=DATE:")){
                     date = line.substring(19, line.length);
-                    //Catch case for 11:59 PM due time, since it is
-                    //displayed as 000000 rather than 235900
-                    if(date.substring(9, line.length) == "000000"){
-                        newEvent.startHour = 23;
-                        newEvent.startMinute = 59;
+                }
+                else if(line.includes("DTSTART:")){
+                    date = line.substring(8, line.length);
+                }
+
+                newEvent.year = parseInt(date.substring(0, 4));
+                newEvent.month = parseInt(date.substring(4, 6));
+                newEvent.day = parseInt(date.substring(6, 8));
+                console.log(newEvent.month + " / " + newEvent.day);
+                //Catch case for 11:59 PM due time, since it is
+                //displayed as 000000 rather than 235900
+                if(date.substring(9, line.length) == "000000"){
+                    newEvent.startHour = 23;
+                    newEvent.startMinute = 59;
+                }
+                else{
+                    if(newEvent.month < 3 || (newEvent.month == 3 && newEvent.day < 13)){
+                        if(parseInt(date.substring(9, 11)) < 4){
+                            newEvent.startHour = parseInt(date.substring(9, 11)) + 19;
+                        }
+                        else{
+                            newEvent.startHour = parseInt(date.substring(9, 11)) - 5;
+                        }
+                        newEvent.startMinute = parseInt(date.substring(11, 13));
                     }
                     else{
                         if(parseInt(date.substring(9, 11)) < 4){
@@ -163,31 +181,30 @@ export function parseFile(file){
                         newEvent.startMinute = parseInt(date.substring(11, 13));
                     }
                 }
-                else if(line.includes("DTSTART:")){
-                    date = line.substring(8, line.length);
-                    if(parseInt(date.substring(9, 11)) < 4){
-                        newEvent.startHour = parseInt(date.substring(9, 11)) + 20;
-                    }
-                    else{
-                        newEvent.startHour = parseInt(date.substring(9, 11)) - 4;
-                    }
-                    newEvent.startMinute = parseInt(date.substring(11, 13));
-                }
-
-                newEvent.year = parseInt(date.substring(0, 4));
-                newEvent.month = parseInt(date.substring(4, 6));
-                newEvent.day = parseInt(date.substring(6, 8));
             }
 
             if(line.includes("DTEND;VALUE=DATE:") || line.includes("DTEND:")){
                 var date = ""
                 if(line.includes("DTEND;VALUE=DATE:")){
                     date = line.substring(17, line.length);
-                    //Catch case for 11:59 PM due time, since it is
-                    //displayed as 000000 rather than 235900
-                    if(date.substring(9, line.length) == "000000"){
-                        newEvent.endHour = 23;
-                        newEvent.endMinute = 59;
+                }
+                else if(line.includes("DTEND:")){
+                    date = line.substring(6, line.length);
+                }
+                //Catch case for 11:59 PM due time, since it is
+                //displayed as 000000 rather than 235900
+                if(date.substring(9, line.length) == "000000"){
+                    newEvent.endHour = 23;
+                    newEvent.endMinute = 59;
+                }
+                else{
+                    if(newEvent.month < 3 || (newEvent.month == 3 && newEvent.day < 13)){
+                        if(parseInt(date.substring(9, 11)) < 4){
+                            newEvent.endHour = parseInt(date.substring(9, 11)) + 19;
+                        }
+                        else{
+                            newEvent.endHour = (parseInt(date.substring(9, 11)) - 5);
+                        }
                     }
                     else{
                         if(parseInt(date.substring(9, 11)) < 4){
@@ -196,18 +213,6 @@ export function parseFile(file){
                         else{
                             newEvent.endHour = (parseInt(date.substring(9, 11)) - 4);
                         }
-
-                        newEvent.endMinute = parseInt(date.substring(11, 13));
-                    }
-
-                }
-                else if(line.includes("DTEND:")){
-                    date = line.substring(6, line.length);
-                    if(parseInt(date.substring(9, 11)) < 4){
-                        newEvent.endHour = parseInt(date.substring(9, 11)) + 20;
-                    }
-                    else{
-                        newEvent.endHour = (parseInt(date.substring(9, 11)) - 4);
                     }
 
                     newEvent.endMinute = parseInt(date.substring(11, 13));
@@ -227,10 +232,10 @@ export function parseFile(file){
 
             if(line.includes("URL:")){
                 if(newEvent.type == "Office Hours" || newEvent.type == "Discussion" || newEvent.type == "Lab" || newEvent.type == "Class"){
-                    newEvent.link = newEvent.description.substring(49, newEvent.description.length);
+                    newEvent.link = newEvent.description.substring(49, newEvent.description.length - 1);
                 }
                 else{
-                    newEvent.link = line.substring(4, newEvent.description.length);
+                    newEvent.link = line.substring(4, line.length);
                     appendURL = true;
                     checkNext = true;
                 }
@@ -257,4 +262,4 @@ export function parseFile(file){
     }
 }
 
-parseFile(large_file);
+parseFile(small_file);

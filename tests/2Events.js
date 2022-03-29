@@ -47,4 +47,17 @@ X-ALT-DESC;FMTTYPE=text/html:<link rel="stylesheet" href="https://instructu
  UGJmQzdoeCtXR3psbWNFLzVmekpsZz09" target="_blank">Click here to join Zoom 
  Meeting:971 9168 3079</a></p>
 END:VEVENT
+BEGIN:VEVENT
+DTSTAMP:20220328T205300Z
+UID:event-assignment-5092896
+DTSTART;VALUE=DATE:20220426T000000
+DTEND;VALUE=DATE:20220426T000000
+CLASS:PUBLIC
+DESCRIPTION:
+SEQUENCE:0
+SUMMARY:Final Project - Week 2 [EEL4712C]
+URL:https://ufl.instructure.com/calendar?include_contexts=course_446349&mon
+ th=04&year=2022#assignment_5092896
+X-ALT-DESC;FMTTYPE=text/html:
+END:VEVENT
 END:VCALENDAR`
